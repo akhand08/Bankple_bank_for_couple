@@ -69,11 +69,9 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	if r.Method == "GET" {
-		fmt.Println("Working GET")
-	}
+	userAccount := CreateNewAccount()
 
-	return WriteJSON(w, http.StatusOK, r.Method)
+	return WriteJSON(w, http.StatusOK, userAccount)
 }
 
 // func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
