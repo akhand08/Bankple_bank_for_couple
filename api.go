@@ -9,19 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func WriteJSON(w http.ResponseWriter, status int, v any) error {
-	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application-json")
-
-	return json.NewEncoder(w).Encode(v)
-}
-
-type apiFunc func(http.ResponseWriter, *http.Request) error
-
-type ApiError struct {
-	Error string
-}
-
 func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(w, r); err != nil {
@@ -32,11 +19,13 @@ func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
 
 type APIServer struct {
 	listenAddr string
+	store      Storage
 }
 
-func NewAPIServer(listenAddr string) *APIServer {
+func NewAPIServer(listenAddr string, store Storage) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		store:      store,
 	}
 }
 
@@ -45,6 +34,7 @@ func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/account", makeHTTPHandlerFunc(s.handleAccount))
+	router.HandleFunc("/account/{id}", makeHTTPHandlerFunc(s.handleAccount))
 	log.Println("The server is listening on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
@@ -69,6 +59,8 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	fmt.Println(vars["id"])
 	userAccount := CreateNewAccount()
 
 	return WriteJSON(w, http.StatusOK, userAccount)
@@ -81,3 +73,17 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 // func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 // 	return nil
 // }
+
+func WriteJSON(w http.ResponseWriter, status int, v any) error {
+
+	w.Header().Add("Content-Type", "application-json")
+	w.WriteHeader(status)
+
+	return json.NewEncoder(w).Encode(v)
+}
+
+type apiFunc func(http.ResponseWriter, *http.Request) error
+
+type ApiError struct {
+	Error string
+}

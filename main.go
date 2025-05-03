@@ -1,11 +1,22 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 func main() {
 
-	server := NewAPIServer(":3000")
-	server.Run()
+	dbStore, err := NewPgStore()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%+v\n", dbStore)
+
+	// server := NewAPIServer(":3000", dbStore)
+	// server.Run()
 
 	fmt.Println("Welcome to Bankple")
 

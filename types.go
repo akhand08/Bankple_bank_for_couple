@@ -3,12 +3,12 @@ package main
 import "math/rand/v2"
 
 type Account struct {
-	FirstName string
-	LastName  string
-	Email     string
-	Phone     string
-	Id        int32
-	Password  string
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	Id        int32  `json:"id"`
+	Password  string `json:"password"`
 }
 
 func CreateNewAccount() *Account {
