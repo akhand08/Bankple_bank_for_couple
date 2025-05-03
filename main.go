@@ -15,8 +15,8 @@ func main() {
 
 	fmt.Printf("%+v\n", dbStore)
 
-	// server := NewAPIServer(":3000", dbStore)
-	// server.Run()
+	server := NewAPIServer(":3000", dbStore)
+	server.Run()
 
 	fmt.Println("Welcome to Bankple")
 

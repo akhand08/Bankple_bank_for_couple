@@ -1,24 +1,33 @@
 package main
 
-import "math/rand/v2"
+import (
+	"time"
+)
 
 type Account struct {
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Balance   float32   `json:"balance"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type CreateAccountRequestBody struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
-	Id        int32  `json:"id"`
-	Password  string `json:"password"`
 }
 
-func CreateNewAccount() *Account {
+func CreateNewAccount(firstName string, lastName string, email string, phone string) *Account {
 
 	return &Account{
-		FirstName: "President",
-		LastName:  "XYZ",
-		Email:     "president.xyz@email.com",
-		Phone:     "0123456789",
-		Id:        rand.Int32(),
-		Password:  "hidden",
+		FirstName: firstName,
+		LastName:  lastName,
+		Email:     email,
+		Phone:     phone,
+		Balance:   0.00,
+		CreatedAt: time.Now().UTC(),
 	}
 }

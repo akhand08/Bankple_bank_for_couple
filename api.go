@@ -46,9 +46,9 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 		return s.handleGetAccount(w, r)
 	}
 
-	// if r.Method == "POST" {
-	// 	return s.handleCreateAccount(w, r)
-	// }
+	if r.Method == "POST" {
+		return s.handleCreateAccount(w, r)
+	}
 
 	// if r.Method == "DELETE" {
 	// 	return s.handleDeleteAccount(w, r)
@@ -59,16 +59,35 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	fmt.Println(vars["id"])
-	userAccount := CreateNewAccount()
+	// vars := mux.Vars(r)
+	// fmt.Println(vars["id"])
+	// userAccount := CreateNewAccount()
 
-	return WriteJSON(w, http.StatusOK, userAccount)
+	// return WriteJSON(w, http.StatusOK, userAccount)
+	return nil
 }
 
-// func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-// 	return nil
-// }
+func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+
+	accountRequestBody := new(CreateAccountRequestBody)
+
+	err := json.NewDecoder(r.Body).Decode(accountRequestBody)
+	if err != nil {
+		return err
+	}
+
+	newAccount := CreateNewAccount(accountRequestBody.FirstName, accountRequestBody.LastName, accountRequestBody.Email, accountRequestBody.Phone)
+
+	err = s.store.CreateAccount(newAccount)
+
+	if err != nil {
+		return err
+	}
+
+	WriteJSON(w, http.StatusOK, *newAccount)
+
+	return nil
+}
 
 // func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 // 	return nil
