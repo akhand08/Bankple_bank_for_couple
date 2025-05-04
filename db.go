@@ -12,6 +12,7 @@ type Storage interface {
 	CreateAccount(*Account) error
 	UpdateAccount(*Account) error
 	DeleteAccount(int) error
+	GetAccount() ([]*Account, error)
 	GetAccountByID(int) (*Account, error)
 }
 
@@ -95,6 +96,37 @@ func (pg *PgStore) DeleteAccount(id int) error {
 	return nil
 }
 
+func (pg *PgStore) GetAccount() ([]*Account, error) {
+
+	sqlQuery := `select * from accounts`
+
+	rows, err := pg.db.Query(sqlQuery)
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var allAccounts []*Account
+	for rows.Next() {
+
+		account := new(Account)
+
+		rows.Scan(&account.ID,
+			&account.FirstName,
+			&account.LastName,
+			&account.Email,
+			&account.Phone,
+			&account.Balance,
+			&account.CreatedAt)
+		allAccounts = append(allAccounts, account)
+
+	}
+
+	return allAccounts, nil
+
+}
+
 func (pg *PgStore) GetAccountByID(id int) (*Account, error) {
 
 	sqlQuery := `select * from accounts where id = $1`
@@ -102,7 +134,7 @@ func (pg *PgStore) GetAccountByID(id int) (*Account, error) {
 
 	row := pg.db.QueryRow(sqlQuery, id)
 
-	err := row.Scan(userAccount.FirstName)
+	err := row.Scan(&userAccount.ID, &userAccount.FirstName, &userAccount.LastName, &userAccount.Email, &userAccount.Phone, &userAccount.Balance, &userAccount.CreatedAt)
 
 	if err != nil {
 		return nil, err
