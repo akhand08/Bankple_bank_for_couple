@@ -65,9 +65,10 @@ func (pg *PgStore) CreateAccount(account *Account) error {
 	sqlQuery := `
 		insert into accounts (first_name, last_name, email, phone, balance, created_at)
 		values ($1, $2, $3, $4, $5, $6)
+		returning id
 	`
-
-	_, err := pg.db.Exec(
+	var userId int
+	err := pg.db.QueryRow(
 		sqlQuery,
 		account.FirstName,
 		account.LastName,
@@ -75,11 +76,13 @@ func (pg *PgStore) CreateAccount(account *Account) error {
 		account.Phone,
 		account.Balance,
 		account.CreatedAt,
-	)
+	).Scan(&userId)
 
 	if err != nil {
 		return err
 	}
+
+	account.ID = userId
 
 	return nil
 }
@@ -93,5 +96,18 @@ func (pg *PgStore) DeleteAccount(id int) error {
 }
 
 func (pg *PgStore) GetAccountByID(id int) (*Account, error) {
-	return nil, nil
+
+	sqlQuery := `select * from accounts where id = $1`
+	userAccount := new(Account)
+
+	row := pg.db.QueryRow(sqlQuery, id)
+
+	err := row.Scan(userAccount.FirstName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return userAccount, nil
+
 }

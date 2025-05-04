@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -34,7 +35,7 @@ func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/account", makeHTTPHandlerFunc(s.handleAccount))
-	router.HandleFunc("/account/{id}", makeHTTPHandlerFunc(s.handleAccount))
+	router.HandleFunc("/account/{id}", makeHTTPHandlerFunc(s.handleGetAccountByID))
 	log.Println("The server is listening on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
@@ -67,6 +68,23 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 	return nil
 }
 
+func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request) error {
+	strID := mux.Vars(r)["id"]
+	accountID, err := strconv.Atoi(strID)
+
+	if err != nil {
+		return err
+	}
+
+	userAccount, err := s.store.GetAccountByID(accountID)
+
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, userAccount)
+}
+
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
 
 	accountRequestBody := new(CreateAccountRequestBody)
@@ -84,9 +102,8 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	WriteJSON(w, http.StatusOK, *newAccount)
+	return WriteJSON(w, http.StatusOK, *newAccount)
 
-	return nil
 }
 
 // func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
