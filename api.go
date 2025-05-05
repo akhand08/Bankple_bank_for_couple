@@ -51,9 +51,9 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 		return s.handleCreateAccount(w, r)
 	}
 
-	// if r.Method == "DELETE" {
-	// 	return s.handleDeleteAccount(w, r)
-	// }
+	if r.Method == "DELETE" {
+		return s.handleDeleteAccount(w, r)
+	}
 
 	return fmt.Errorf("Method not allowed %s", r.Method)
 
@@ -70,6 +70,11 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 }
 
 func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request) error {
+
+	if r.Method == "DELETE" {
+		return s.handleDeleteAccount(w, r)
+	}
+
 	strID := mux.Vars(r)["id"]
 	accountID, err := strconv.Atoi(strID)
 
@@ -107,9 +112,21 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 
 }
 
-// func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
-// 	return nil
-// }
+func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
+	strID := mux.Vars(r)["id"]
+	accountID, err := strconv.Atoi(strID)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.store.DeleteAccount(accountID)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, accountID)
+}
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
 

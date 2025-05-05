@@ -93,6 +93,15 @@ func (pg *PgStore) UpdateAccount(account *Account) error {
 }
 
 func (pg *PgStore) DeleteAccount(id int) error {
+
+	sqlQuery := `delete from accounts where id = $1`
+
+	_, err := pg.db.Exec(sqlQuery, id)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
