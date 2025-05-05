@@ -89,7 +89,32 @@ func (pg *PgStore) CreateAccount(account *Account) error {
 }
 
 func (pg *PgStore) UpdateAccount(account *Account) error {
+
+	sqlQuery := `UPDATE accounts
+	SET first_name = $1,
+		last_name = $2,
+		email = $3,
+		phone = $4,
+		balance = $5
+	WHERE id = $6
+	RETURNING id, first_name, last_name, email, phone, balance, created_at`
+
+	row := pg.db.QueryRow(sqlQuery,
+		account.FirstName,
+		account.LastName,
+		account.Email,
+		account.Phone,
+		account.Balance,
+		account.ID,
+	)
+
+	err := row.Scan(&account.ID, &account.FirstName, &account.LastName, &account.Email, &account.Phone, &account.Balance, &account.CreatedAt)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
 	return nil
+
 }
 
 func (pg *PgStore) DeleteAccount(id int) error {

@@ -55,6 +55,10 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 		return s.handleDeleteAccount(w, r)
 	}
 
+	if r.Method == "PUT" {
+		return s.handleUpdateAccount(w, r)
+	}
+
 	return fmt.Errorf("Method not allowed %s", r.Method)
 
 }
@@ -126,6 +130,28 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 	}
 
 	return WriteJSON(w, http.StatusOK, accountID)
+}
+
+func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
+
+	updateAccount := new(Account)
+
+	err := json.NewDecoder(r.Body).Decode(updateAccount)
+
+	if err != nil {
+		return nil
+	}
+
+	err = s.store.UpdateAccount(updateAccount)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+
+	}
+
+	return WriteJSON(w, http.StatusOK, *updateAccount)
+
 }
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
