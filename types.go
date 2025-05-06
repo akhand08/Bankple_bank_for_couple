@@ -32,3 +32,8 @@ func CreateNewAccount(firstName string, lastName string, email string, phone str
 		CreatedAt: time.Now().UTC(),
 	}
 }
+
+type DepositMoney struct {
+	ID     int
+	Amount float32
+}

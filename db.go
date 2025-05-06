@@ -14,6 +14,8 @@ type Storage interface {
 	DeleteAccount(int) error
 	GetAccount() ([]*Account, error)
 	GetAccountByID(int) (*Account, error)
+
+	DepositMoney(*DepositMoney) (*Account, error)
 }
 
 type PgStore struct {
@@ -176,4 +178,8 @@ func (pg *PgStore) GetAccountByID(id int) (*Account, error) {
 
 	return userAccount, nil
 
+}
+
+func (pg *PgStore) DepositMoney(depositMoneyRequest *DepositMoney) (*Account, error) {
+	return nil, nil
 }
