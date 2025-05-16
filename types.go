@@ -34,6 +34,6 @@ func CreateNewAccount(firstName string, lastName string, email string, phone str
 }
 
 type DepositMoney struct {
-	ID     int
-	Amount float32
+	ID     int     `json:"id"`
+	Amount float32 `json:"amount"`
 }

@@ -36,6 +36,7 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/account", makeHTTPHandlerFunc(s.handleAccount))
 	router.HandleFunc("/account/{id}", makeHTTPHandlerFunc(s.handleGetAccountByID))
+	router.HandleFunc("/money", makeHTTPHandlerFunc(s.handleMoney))
 	log.Println("The server is listening on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
@@ -63,6 +64,35 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 
 }
 
+func (s *APIServer) handleMoney(w http.ResponseWriter, r *http.Request) error {
+
+	if r.Method == "POST" {
+		return s.HandleDepositMoney(w, r)
+	}
+
+	return fmt.Errorf("Method not allowed %s", r.Method)
+
+}
+
+func (s *APIServer) HandleDepositMoney(w http.ResponseWriter, r *http.Request) error {
+
+	depositMoneyRequestBody := new(DepositMoney)
+
+	err := json.NewDecoder(r.Body).Decode(depositMoneyRequestBody)
+
+	if err != nil {
+		return err
+	}
+
+	userAccount, err := s.store.DepositMoney(depositMoneyRequestBody)
+
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, userAccount)
+
+}
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
 
 	allAccounts, err := s.store.GetAccount()

@@ -181,5 +181,29 @@ func (pg *PgStore) GetAccountByID(id int) (*Account, error) {
 }
 
 func (pg *PgStore) DepositMoney(depositMoneyRequest *DepositMoney) (*Account, error) {
-	return nil, nil
+
+	sqlQueryToGetAccount := `select * from accounts where id = $1`
+	userAccount := new(Account)
+
+	row := pg.db.QueryRow(sqlQueryToGetAccount, depositMoneyRequest.ID)
+	err := row.Scan(&userAccount.ID, &userAccount.FirstName, &userAccount.LastName, &userAccount.Email, &userAccount.Phone, &userAccount.Balance, &userAccount.CreatedAt)
+
+	sqlQueryToDeposit := `UPDATE accounts
+		SET balance = $1
+		WHERE id = $2
+		RETURNING id, first_name, last_name, email, phone, balance, created_at`
+
+	row = pg.db.QueryRow(sqlQueryToDeposit,
+		userAccount.Balance+depositMoneyRequest.Amount,
+		userAccount.ID,
+	)
+
+	err = row.Scan(&userAccount.ID, &userAccount.FirstName, &userAccount.LastName, &userAccount.Email, &userAccount.Phone, &userAccount.Balance, &userAccount.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return userAccount, nil
+
 }
