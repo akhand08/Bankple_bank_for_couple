@@ -37,6 +37,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/account", makeHTTPHandlerFunc(s.handleAccount))
 	router.HandleFunc("/account/{id}", makeHTTPHandlerFunc(s.handleGetAccountByID))
 	router.HandleFunc("/money", makeHTTPHandlerFunc(s.handleMoney))
+	router.HandleFunc("transfer-money", makeHTTPHandlerFunc(s.HandleTransferMoney))
 	log.Println("The server is listening on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
@@ -71,6 +72,10 @@ func (s *APIServer) handleMoney(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return fmt.Errorf("Method not allowed %s", r.Method)
+
+}
+
+func (s *APIServer) HandleTransferMoney(w http.ResponseWriter, r *http.Request) error {
 
 }
 

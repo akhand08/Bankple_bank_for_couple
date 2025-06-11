@@ -37,3 +37,9 @@ type DepositMoney struct {
 	ID     int     `json:"id"`
 	Amount float32 `json:"amount"`
 }
+
+type TransferMoney struct {
+	SenderId   int     `json:"sender_id"`
+	ReceiverId int     `json:"receiver_id"`
+	Amount     float32 `json:"amount"`
+}
