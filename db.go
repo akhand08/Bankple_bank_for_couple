@@ -16,6 +16,7 @@ type Storage interface {
 	GetAccountByID(int) (*Account, error)
 
 	DepositMoney(*DepositMoney) (*Account, error)
+	TransferMoney(*TransferMoney) (string, error)
 }
 
 type PgStore struct {
@@ -205,5 +206,55 @@ func (pg *PgStore) DepositMoney(depositMoneyRequest *DepositMoney) (*Account, er
 	}
 
 	return userAccount, nil
+
+}
+
+func (pg *PgStore) TransferMoney(transferMoneyRequest *TransferMoney) (string, error) {
+
+	senderAccount, err := pg.GetAccountByID(transferMoneyRequest.SenderId)
+
+	if err != nil {
+		return "", err
+	}
+
+	receiverAccount, err := pg.GetAccountByID(transferMoneyRequest.ReceiverId)
+
+	if err != nil {
+		return "", err
+	}
+
+	sqlQueryToDeduct := `UPDATE accounts
+		SET balance = $1
+		WHERE id = $2
+		RETURNING id, first_name, last_name, email, phone, balance, created_at`
+
+	row := pg.db.QueryRow(sqlQueryToDeduct,
+		senderAccount.Balance-transferMoneyRequest.Amount,
+		senderAccount.ID,
+	)
+
+	err = row.Scan(&senderAccount.ID, &senderAccount.FirstName, &senderAccount.LastName, &senderAccount.Email, &senderAccount.Phone, &senderAccount.Balance, &senderAccount.CreatedAt)
+
+	if err != nil {
+		return "", err
+	}
+
+	sqlQueryToAdd := `UPDATE accounts
+		SET balance = $1
+		WHERE id = $2
+		RETURNING id, first_name, last_name, email, phone, balance, created_at`
+
+	row = pg.db.QueryRow(sqlQueryToAdd,
+		receiverAccount.Balance+transferMoneyRequest.Amount,
+		receiverAccount.ID,
+	)
+
+	err = row.Scan(&receiverAccount.ID, &receiverAccount.FirstName, &receiverAccount.LastName, &receiverAccount.Email, &receiverAccount.Phone, &receiverAccount.Balance, &receiverAccount.CreatedAt)
+
+	if err != nil {
+		return "", err
+	}
+
+	return "Money trasfer has been successful", nil
 
 }
