@@ -21,3 +21,7 @@ func main() {
 	fmt.Println("Welcome to Bankple")
 
 }
+
+
+
+// https://chatgpt.com/c/6846c3da-be00-8012-a407-0e1d8c85c221

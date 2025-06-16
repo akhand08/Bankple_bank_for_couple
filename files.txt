@@ -1,0 +1,127 @@
+bankple/
+│
+├── cmd/
+│   └── bankple/             # main entry point
+│       └── main.go
+│
+├── internal/
+│   ├── api/                 # HTTP handlers
+│   │   ├── account.go
+│   │   ├── transfer.go
+│   │   └── middleware.go
+│   │
+│   ├── db/                  # Database access (store layer)
+│   │   ├── postgres.go
+│   │   └── migrations/
+│   │       └── 001_init.sql
+│   │
+│   ├── service/             # Business logic layer
+│   │   ├── account.go
+│   │   └── transfer.go
+│   │
+│   ├── auth/                # JWT handling, token creation/validation
+│   │   └── jwt.go
+│   │
+│   └── models/              # Shared domain types across layers
+│       ├── account.go       # Account struct, request/response types
+│       ├── transfer.go      # Transfer request struct, etc.
+│       └── auth.go          # User, Claims, LoginRequest etc.
+│
+├── pkg/                     # Public reusable packages (if any)
+│   └── utils/               # Shared helpers (e.g., JSON writer, logger)
+│       └── response.go
+│
+├── config/                  # App configuration (env, constants)
+│   └── config.go
+│
+├── go.mod
+├── go.sum
+├── Makefile                 # Build/run commands
+└── README.md
+
+
+
+
+
+
+
+
+
+
+
+
+[1] 🌐 Browser Sends HTTP Request (e.g., POST /account)
+    - Example: curl -X POST http://localhost:8080/account
+           |
+           v
+[2] 🚀 main.go: Start Server and Inject Dependencies
+    └── File: cmd/bankple/main.go
+    └── Requires:
+        ✅ DB store (e.g., NewPostgresStore)
+        ✅ router.NewRouter(store)
+    └── Action:
+        - Initialize DB connection
+        - Construct and inject shared dependencies
+        - Start HTTP server: http.ListenAndServe(":8080", router)
+           |
+           v
+[3] 🧭 router.go: Central Router Setup
+    └── File: internal/router/router.go
+    └── Requires:
+        ✅ Feature-specific routers (account_router.go, etc.)
+    └── Action:
+        - Create router via mux.NewRouter()
+        - Call RegisterAccountRoutes(r, store)
+        - Return the fully configured router
+           |
+           v
+[4] 🔌 account_router.go: Register Account Routes
+    └── File: internal/router/account_router.go
+    └── Requires:
+        ✅ store to initialize service
+        ✅ service to initialize handler
+    └── Action:
+        - Initialize AccountService with DB store
+        - Initialize AccountHandler with service
+        - Bind handler to route:
+            r.HandleFunc("/account", handler.HandleAccount).Methods("POST")
+           |
+           v
+[5] 🧰 account.go (Handler Layer)
+    └── File: internal/api/account.go
+    └── Requires:
+        ✅ AccountService
+    └── Action:
+        - Parse and validate request input
+        - Call business logic: service.CreateAccount()
+        - Encode and send response
+           |
+           v
+[6] 🧠 account.go (Service Layer)
+    └── File: internal/service/account.go
+    └── Requires:
+        ✅ Database store interface (Storage)
+    └── Action:
+        - Implement business rules (e.g., check duplicates, etc.)
+        - Call DB store: store.CreateAccount(...)
+        - Return result or error
+           |
+           v
+[7] 🗃️ postgres.go (DB Layer)
+    └── File: internal/db/postgres.go
+    └── Requires:
+        ✅ Active DB connection (e.g., *sql.DB)
+    └── Action:
+        - Prepare and execute SQL queries (INSERT, SELECT, etc.)
+        - Scan DB results into Go structs
+        - Return data to service layer
+           |
+           v
+[8] 🔁 Response Bubbles Back Up (DB → Service → Handler → Router → Server)
+    └── Each layer passes response/error upward
+           |
+           v
+[9] 📤 Final Response Sent to Browser
+    └── In handler:
+        ✅ json.NewEncoder(w).Encode(response)
+        ✅ Status codes (e.g., w.WriteHeader(201))
